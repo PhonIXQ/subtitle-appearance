@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "Subtitle Appearance",
+  "version": "1.0.0",
+  "description": "Customize subtitle appearance on Netflix, Disney+, HBO Max, and other streaming platforms",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": [
+    "https://*.netflix.com/*",
+    "https://*.disneyplus.com/*",
+    "https://*.hbomax.com/*",
+    "https://*.hulu.com/*",
+    "https://*.primevideo.com/*"
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.netflix.com/*",
+        "https://*.disneyplus.com/*",
+        "https://*.hbomax.com/*",
+        "https://*.hulu.com/*",
+        "https://*.primevideo.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
