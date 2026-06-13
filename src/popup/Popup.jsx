@@ -25,6 +25,7 @@ function Popup() {
       setSaved(true);
       // Send message to content script to update styles
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (!tabs.length) return;
         chrome.tabs.sendMessage(tabs[0].id, {
           type: 'UPDATE_SUBTITLE_STYLES',
           settings,
@@ -34,9 +35,17 @@ function Popup() {
     }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
+    await saveSettings(DEFAULT_SETTINGS);
     setSettings(DEFAULT_SETTINGS);
     setSaved(false);
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs.length) return;
+      chrome.tabs.sendMessage(tabs[0].id, {
+        type: 'UPDATE_SUBTITLE_STYLES',
+        settings: DEFAULT_SETTINGS,
+      });
+    });
   };
 
   return (

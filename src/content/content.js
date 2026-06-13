@@ -26,7 +26,7 @@ function applyTextStyles(element, settings) {
 
 // Apply background styles to container
 function applyBackgroundStyles(container, settings) {
-  if (!container) return;
+  if (!container || !settings) return;
 
   const opacity = Math.round(settings.backgroundOpacity * 255)
     .toString(16)
@@ -70,44 +70,113 @@ const platformStylers = {
   disney: settings => {
     try {
       const container = document.querySelector('[data-testid="player-space-container"]');
+      // console.log(container);
       if (container) {
-        if (container.style.cursor === "default") {
-          const textContainer = document.querySelector(".shaka-text-container");
+        const video = container.querySelector("video");
+        if (video) {
+          video.style.containerType = "inline-size";
+        }
+        // if (container.style.cursor === "default") {
+        const textContainer = document.querySelector(".shaka-text-container");
+        if (!textContainer) return;
 
-          const positionFixed = textContainer && textContainer.parentElement;
-          if (positionFixed) {
-            const computedStyle = window.getComputedStyle(positionFixed);
-            if (computedStyle && computedStyle.height !== "100%") {
-              positionFixed.style.height = "100%";
+        const positionFixed = textContainer && textContainer.parentElement;
+        if (positionFixed) {
+          const computedStyle = window.getComputedStyle(positionFixed);
+          if (computedStyle && computedStyle.height !== "100%") {
+            positionFixed.style.height = "100%";
+          }
+        }
+        // Adjust bottom offset
+        const bottomOffset = textContainer && textContainer.querySelector("div");
+        if (bottomOffset) {
+          const styleAttr = bottomOffset.getAttribute("style") || "";
+
+          if (!styleAttr.includes("bottom: 8%")) {
+            if (/bottom\s*:\s*\d+%/.test(styleAttr)) {
+              const newStyle = styleAttr.replace(/bottom\s*:\s*\d+%/g, "bottom: 8%");
+              bottomOffset.setAttribute("style", newStyle);
+            } else {
+              const trimmed = styleAttr.trim().replace(/;+\s*$/, "");
+              bottomOffset.setAttribute("style", (trimmed ? trimmed + ";" : "") + " bottom: 8%;");
             }
           }
-          // Adjust bottom offset
-          // const bottomOffset = textContainer && textContainer.querySelector("div");
-          // if (bottomOffset) {
-          //   const styleAttr = bottomOffset.getAttribute("style") || "";
-
-          //   if (!styleAttr.includes("bottom: 8%")) {
-          //     if (/bottom\s*:\s*\d+%/.test(styleAttr)) {
-          //       const newStyle = styleAttr.replace(/bottom\s*:\s*\d+%/g, "bottom: 8%");
-          //       bottomOffset.setAttribute("style", newStyle);
-          //     } else {
-          //       const trimmed = styleAttr.trim().replace(/;+\s*$/, "");
-          //       bottomOffset.setAttribute("style", (trimmed ? trimmed + ";" : "") + " bottom: 8%;");
-          //     }
-          //   }
-          // }
         }
         // Find span within the subtitle container
-        const subtitles = document.querySelectorAll(".shaka-text-container span");
-        if (subtitles && subtitles.length > 0) {
-          const fontSize = subtitles[0].style.fontSize;
-          if (fontSize !== settings.fontSize) {
-            subtitles.forEach(subtitle => {
-              applyTextStyles(subtitle, settings);
-              applyBackgroundStyles(subtitle, settings);
-            });
+        // }
+        const subtitles = textContainer.querySelector("span");
+        if (subtitles !== null) {
+          console.log(settings.fontSize);
+          const fontSize = `clamp(4px, 3.4cqw, 56px)`;
+          const color = settings.textColor || "#fff";
+          const fontFamily = settings.fontFamily || "inherit";
+          // subtitles.style.setProperty("font-size", `${fontSize}px`, "important");
+          // subtitles.style.setProperty("color", color, "important");
+          subtitles.style.setProperty(
+            "background-color",
+            `${settings.backgroundColor}${Math.round(settings.backgroundOpacity * 255)
+              .toString(16)
+              .padStart(2, "0")}`
+          );
+          // applyBackgroundStyles(subtitles, settings);
+          // if (settings.fontFamily) {
+          //   subtitles.style.setProperty("font-family", settings.fontFamily, "important");
+          // }
+          // Set font-size on parent div
+          let parent = subtitles.parentElement;
+          while (parent && parent !== document.body) {
+            // parent.style.setProperty("font-size", `${fontSize}px`, "important");
+            if (parent.classList.contains("shaka-text-container")) break;
+            parent = parent.parentElement;
           }
+          // Only update/inject style if values changed
+          const styleId = "subtitle-appearance-disney";
+          let style = document.getElementById(styleId);
+          const cssContent = `
+            .shaka-text-container span[style] {
+              font-size: ${fontSize};
+              color: ${color};
+              font-family: ${fontFamily};
+              text-shadow: ${settings.textShadow ? "2px 2px 4px rgba(0,0,0,0.8)" : "none"};
+            }
+            .shaka-text-container upgraded {
+              bottom: 8%;
+            }
+          `;
+          if (!style) {
+            style = document.createElement("style");
+            style.id = styleId;
+            style.textContent = cssContent;
+            document.head.appendChild(style);
+          } else if (style.textContent !== cssContent) {
+            style.textContent = cssContent;
+          }
+          // Optionally log for debugging
+          console.log(subtitles);
         }
+        // subtitles.style.fontSize = settings.fontSize;
+
+        // if (subtitles) {
+        // }
+        // if (subtitles && subtitles.length > 0) {
+        //   const fontSize = subtitles[0].style.fontSize;
+        //   if (!fontSize) return;
+        //   if (fontSize !== settings.fontSize) {
+        //     subtitles.forEach(subtitle => {
+        //       applyTextStyles(subtitle, settings);
+        //       applyBackgroundStyles(subtitle, settings);
+        //     });
+        //   }
+        // }
+        // const currentFontSize = subtitles[0].style.fontSize;
+        // console.log(currentFontSize);
+        // if (currentFontSize !== settings.fontSize) {
+        //   subtitles.forEach(subtitle => {
+        //     currentFontSize.style.fontSize = "10px";
+        //     applyTextStyles(subtitle, settings);
+        //     // applyBackgroundStyles(subtitle, settings);
+        //   });
+        // }
       }
     } catch (e) {
       console.error("Error in Disney styling: ", e);
