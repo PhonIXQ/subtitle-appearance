@@ -246,16 +246,31 @@ function applySubtitleStyles(settings) {
 
 // Observer to watch for dynamically added subtitles
 function observeSubtitles() {
-  const observer = new MutationObserver(() => {
-    if (currentSettings) {
-      applySubtitleStyles(currentSettings);
+  const observer = new MutationObserver((mutations) => {
+    if (!currentSettings) return;
+    let shouldApply = false;
+    for (const mutation of mutations) {
+      if (mutation.type === 'childList') {
+        shouldApply = true;
+        break;
+      }
+      if (mutation.type === 'attributes') {
+        // Ignore inline `style` changes we make ourselves to avoid a feedback loop
+        if (mutation.attributeName && mutation.attributeName.toLowerCase() === 'style') continue;
+        // React to other attribute changes (class, data-*, etc.)
+        shouldApply = true;
+        break;
+      }
     }
+    if (shouldApply) applySubtitleStyles(currentSettings);
   });
 
+  // Observe DOM changes but filter attributes to avoid reacting to our own style updates
   observer.observe(document.documentElement, {
     childList: true,
     subtree: true,
     attributes: true,
+    attributeFilter: ['class', 'data-testid', 'role', 'aria-hidden'],
   });
 }
 
