@@ -1,15 +1,18 @@
+import { getFontSizeClamp } from './font';
+
 // Default subtitle settings
 export const DEFAULT_SETTINGS = {
   fontFamily: 'Arial',
-  fontSize: '50',
+  fontSize: 56,
+  fontSizeClamp: getFontSizeClamp(56),
   textColor: '#FFFFFF',
   backgroundColor: '#000000',
-  backgroundOpacity: '0.75',
+  backgroundOpacity: 0.75,
   textShadow: true,
   fontWeight: 'normal',
   textAlign: 'center',
   position: 'bottom',
-  positionOffset: '0',
+  positionOffset: 0,
   positionFixed: false,
 };
 

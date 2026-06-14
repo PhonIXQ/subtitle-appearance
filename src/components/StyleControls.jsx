@@ -1,16 +1,14 @@
 import React from 'react';
 
 function StyleControls({ settings, onSettingChange }) {
-  const fontFamilies = ['Arial', 'Helvetica', 'Times New Roman', 'Courier New', 'Verdana', 'Georgia'];
+  const fontFamilies = ['Arial', 'Helvetica', 'Times New Roman', 'Courier New', 'Verdana'];
   const fontSizes = ['16', '18', '20', '24', '28', '32', '36', '40'];
 
   return (
     <div className="space-y-4 mt-4">
       {/* Font Family */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Font Family
-        </label>
+      {/* <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Font Family</label>
         <select
           value={settings.fontFamily}
           onChange={(e) => onSettingChange('fontFamily', e.target.value)}
@@ -22,7 +20,7 @@ function StyleControls({ settings, onSettingChange }) {
             </option>
           ))}
         </select>
-      </div>
+      </div> */}
 
       {/* Font Size */}
       <div>
@@ -33,6 +31,7 @@ function StyleControls({ settings, onSettingChange }) {
           type="range"
           min="16"
           max="60"
+          step="4"
           value={settings.fontSize}
           onChange={(e) => onSettingChange('fontSize', e.target.value)}
           className="w-full"
@@ -40,10 +39,8 @@ function StyleControls({ settings, onSettingChange }) {
       </div>
 
       {/* Text Color */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Text Color
-        </label>
+      {/* <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
         <div className="flex gap-2">
           <input
             type="color"
@@ -58,13 +55,11 @@ function StyleControls({ settings, onSettingChange }) {
             className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Background Color */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Background Color
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
         <div className="flex gap-2">
           <input
             type="color"
@@ -90,7 +85,7 @@ function StyleControls({ settings, onSettingChange }) {
           type="range"
           min="0"
           max="1"
-          step="0.05"
+          step="0.10"
           value={settings.backgroundOpacity}
           onChange={(e) => onSettingChange('backgroundOpacity', e.target.value)}
           className="w-full"
@@ -113,9 +108,7 @@ function StyleControls({ settings, onSettingChange }) {
 
       {/* Font Weight */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Font Weight
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Font Weight</label>
         <select
           value={settings.fontWeight}
           onChange={(e) => onSettingChange('fontWeight', e.target.value)}
