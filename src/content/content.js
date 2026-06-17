@@ -1,5 +1,13 @@
 let currentSettings = null;
 
+// Debounced apply helper to avoid thrashing on frequent mutations
+let _debounceApplyTimeout = null;
+function debouncedApply(settings, wait = 120) {
+  if (!settings) return;
+  if (_debounceApplyTimeout) clearTimeout(_debounceApplyTimeout);
+  _debounceApplyTimeout = setTimeout(() => applySubtitleStyles(settings), wait);
+}
+
 // Helper to detect platform from hostname
 function detectPlatform(hostname) {
   if (!hostname) return 'not supported';
@@ -71,10 +79,9 @@ const platformStylers = {
         if (bottomOffset && bottomOffset.style.bottom !== '8%') {
           bottomOffset.style.bottom = '8%';
         }
-        // Find all spans within the subtitle container
+        // Find all spans within the subtitle container and apply styles if present
         const subtitles = container.querySelectorAll('span span');
-        const currentFontSize = subtitles[0].style.fontSize;
-        if (currentFontSize !== settings.fontSize) {
+        if (subtitles && subtitles.length > 0) {
           subtitles.forEach((subtitle) => {
             applyTextStyles(subtitle, settings);
             applyBackgroundStyles(subtitle, settings);
@@ -223,12 +230,82 @@ const platformStylers = {
 
   wetv: (settings) => {
     try {
-      // All .text-track divs may be present simultaneously (multi-line subs)
-      const spans = document.querySelectorAll('#player-wrapper .text-track span');
-      spans.forEach((element) => {
-        applyTextStyles(element, settings);
-        applyBackgroundStyles(element, settings);
-      });
+      const playerView = document.querySelector('#player-wrapper');
+      if (playerView) {
+        playerView.style.containerType = 'inline-size';
+        playerView.style.margin = '0 auto';
+
+        // Hide the page header when the WeTV fullscreen class is present
+        const isFullscreen = playerView.classList.contains('wetv-player__page-fullscreen');
+        const header = document.querySelector('header');
+        if (isFullscreen) {
+          if (header) header.style.display = 'none';
+        } else if (header && header.style.display === 'none') {
+          header.style.display = '';
+        }
+
+        const video = playerView.querySelector('video');
+        // Defensive: video may not be present yet or metadata not loaded
+        if (video) {
+          const rect = video.getBoundingClientRect();
+          let realWidth;
+          let realHeight;
+
+          // Use video metadata if available; otherwise fall back to rect dimensions
+          const videoRatio = video.videoWidth / video.videoHeight;
+          const containerRatio = rect.width / rect.height;
+
+          if (videoRatio > containerRatio) {
+            realWidth = rect.width;
+            realHeight = rect.width / videoRatio;
+          } else {
+            realHeight = rect.height;
+            realWidth = rect.height * videoRatio;
+          }
+
+          if (realWidth && !Number.isNaN(realWidth)) {
+            playerView.style.width = realWidth + 'px';
+          }
+        }
+        
+        const container = document.querySelector('#player-wrapper .text-track');
+        if (container) {
+          // Adjust bottom offset and center horizontally relative to the real video area
+          const bottomOffset = container;
+          if (bottomOffset) {
+            // Find the internal player wrapper (the element that defines the real video area)
+            const internal =
+              document.querySelector('#internal-player-wrapper') || (playerView && playerView);
+
+            const applyPosition = () => {
+              if (!internal || !bottomOffset) return;
+              const rect = internal.getBoundingClientRect();
+              if (rect) {
+                // Set bottom offset to 8% of video height (in px) so it's anchored visually at ~8%
+                const bottomPx = Math.round(rect.height * 0.08);
+
+                bottomOffset.style.left = '50%';
+                bottomOffset.style.bottom = `${bottomPx}px`;
+                bottomOffset.style.transform = 'translateX(-50%)';
+                bottomOffset.style.alignContent = 'end';
+              }
+            };
+
+            applyPosition();
+          }
+          const span = container.querySelector('span');
+          if (span) {
+            const width = playerView.getBoundingClientRect().width;
+            const value = Math.min(56, Math.max(4, width * 0.034 * (settings.fontSize / 56)));
+
+            span.style.lineHeight = `${value * 1.4}px`;
+            span.style.width = 'max-content';
+
+            applyTextStyles(span, settings);
+            applyBackgroundStyles(span, settings);
+          }
+        }
+      }
     } catch (e) {
       console.error('Error in WeTV styling: ', e);
     }
