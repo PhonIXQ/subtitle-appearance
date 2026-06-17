@@ -1,6 +1,6 @@
 {
   "name": "subtitle-appearance",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Edge browser extension for customizing subtitle appearance on streaming platforms",
   "type": "module",
   "scripts": {

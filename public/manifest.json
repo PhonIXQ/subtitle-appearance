@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Subtitle Appearance",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Customize subtitle appearance on Netflix, Disney+, HBO Max, Hulu, Prime Video, WeTV, and other streaming platforms",
   "permissions": ["storage", "activeTab"],
   "host_permissions": [
@@ -17,8 +17,7 @@
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+      "48": "icons/icon48.png"
     }
   },
   "content_scripts": [
@@ -41,7 +40,6 @@
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "48": "icons/icon48.png"
   }
 }
