@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Subtitle Appearance",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Customize subtitle appearance on Netflix, Disney+, HBO Max, Hulu, Prime Video, WeTV, and other streaming platforms",
   "permissions": ["storage", "activeTab"],
   "host_permissions": [
