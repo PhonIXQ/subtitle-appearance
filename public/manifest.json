@@ -10,7 +10,8 @@
     "https://*.hbomax.com/*",
     "https://*.hulu.com/*",
     "https://*.primevideo.com/*",
-    "https://*.wetv.vip/*"
+    "https://*.wetv.vip/*",
+    "https://*.viu.com/*"
   ],
   "action": {
     "default_popup": "src/popup/popup.html",
@@ -28,7 +29,8 @@
         "https://*.hbomax.com/*",
         "https://*.hulu.com/*",
         "https://*.primevideo.com/*",
-        "https://*.wetv.vip/*"
+        "https://*.wetv.vip/*",
+        "https://*.viu.com/*"
       ],
       "js": ["content.js"],
       "run_at": "document_end"

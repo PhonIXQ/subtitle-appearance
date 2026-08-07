@@ -18,6 +18,7 @@ function detectPlatform(hostname) {
   if (host.includes('hulu.com')) return 'hulu';
   if (host.includes('primevideo.com')) return 'prime';
   if (host.includes('wetv.vip')) return 'wetv';
+  if (host.includes('viu.com')) return 'viu';
   return 'not supported';
 }
 
@@ -62,6 +63,136 @@ function applyBackgroundStyles(container, settings) {
   );
   container.style.padding = '8px 16px';
   container.style.borderRadius = '4px';
+}
+
+// Toggle theatre mode by modifying existing classes' inline styles (no new class creation)
+function toggleTheatreMode(target) {
+  const bodyTarget = target || document.body;
+  // Determine current state by checking a marker on body
+  const active = document.body.getAttribute('data-subtitle-theatre-active') === 'true';
+
+  const applyStyles = () => {
+    // Hide header elements and any .Box-root elements, remove top padding
+    // document.querySelectorAll('header, .Box-root').forEach((el) => {
+    //   if (!el.hasAttribute('data-prev-styles')) {
+    //     const prev = { display: el.style.display || '', paddingTop: el.style.paddingTop || '' };
+    //     el.setAttribute('data-prev-styles', JSON.stringify(prev));
+    //   }
+    //   el.style.display = 'none';
+    //   el.style.paddingTop = '0px';
+    // });
+
+    // Container-root => padding-left/right 0
+    // document.querySelectorAll('.Container-root').forEach((el) => {
+    //   if (!el.hasAttribute('data-prev-styles')) {
+    //     const prev = { paddingLeft: el.style.paddingLeft || '', paddingRight: el.style.paddingRight || '' };
+    //     el.setAttribute('data-prev-styles', JSON.stringify(prev));
+    //   }
+    //   el.style.paddingLeft = '0px';
+    //   el.style.paddingRight = '0px';
+    // });
+
+    // Grid container => margin: 0 auto
+    // document.querySelectorAll('.Grid-root.Grid-container').forEach((el) => {
+    //   if (!el.hasAttribute('data-prev-styles')) {
+    //     const prev = { margin: el.style.margin || '' };
+    //     el.setAttribute('data-prev-styles', JSON.stringify(prev));
+    //   }
+    //   el.style.margin = '0 auto';
+    // });
+
+    // Grid item => flex: 1
+    // document.querySelectorAll('.Grid-root.Grid-item').forEach((el) => {
+    //   if (!el.hasAttribute('data-prev-styles')) {
+    //     const prev = { flex: el.style.flex || '' };
+    //     el.setAttribute('data-prev-styles', JSON.stringify(prev));
+    //   }
+    //   el.style.flex = '1 1 auto';
+    // });
+
+    // Optionally constrain the player wrapper width
+    // if (bodyTarget && bodyTarget.style) {
+    //   if (!bodyTarget.hasAttribute('data-prev-styles')) {
+    //     const prev = { maxWidth: bodyTarget.style.maxWidth || '', margin: bodyTarget.style.margin || '' };
+    //     bodyTarget.setAttribute('data-prev-styles', JSON.stringify(prev));
+    //   }
+    //   bodyTarget.style.maxWidth = '1200px';
+    //   bodyTarget.style.margin = '0 auto';
+    // }
+
+    document.body.setAttribute('data-subtitle-theatre-active', 'true');
+    return true;
+  };
+
+  const restoreStyles = () => {
+    // Restore header and any .Box-root elements
+    document.querySelectorAll('header, .Box-root').forEach((el) => {
+      try {
+        const prev = el.getAttribute('data-prev-styles');
+        if (prev) {
+          const parsed = JSON.parse(prev);
+          el.style.display = parsed.display || '';
+          el.style.paddingTop = parsed.paddingTop || '';
+          el.removeAttribute('data-prev-styles');
+        }
+      } catch (e) {}
+    });
+
+    // Restore containers
+    document.querySelectorAll('.Container-root').forEach((el) => {
+      try {
+        const prev = el.getAttribute('data-prev-styles');
+        if (prev) {
+          const parsed = JSON.parse(prev);
+          el.style.paddingLeft = parsed.paddingLeft || '';
+          el.style.paddingRight = parsed.paddingRight || '';
+          el.removeAttribute('data-prev-styles');
+        }
+      } catch (e) {}
+    });
+
+    // Restore grid containers
+    document.querySelectorAll('.Grid-root.Grid-container').forEach((el) => {
+      try {
+        const prev = el.getAttribute('data-prev-styles');
+        if (prev) {
+          const parsed = JSON.parse(prev);
+          el.style.margin = parsed.margin || '';
+          el.removeAttribute('data-prev-styles');
+        }
+      } catch (e) {}
+    });
+
+    // Restore grid items
+    document.querySelectorAll('.Grid-root.Grid-item').forEach((el) => {
+      try {
+        const prev = el.getAttribute('data-prev-styles');
+        if (prev) {
+          const parsed = JSON.parse(prev);
+          el.style.flex = parsed.flex || '';
+          el.removeAttribute('data-prev-styles');
+        }
+      } catch (e) {}
+    });
+
+    // Restore body/player wrapper
+    if (bodyTarget && bodyTarget.style) {
+      try {
+        const prev = bodyTarget.getAttribute('data-prev-styles');
+        if (prev) {
+          const parsed = JSON.parse(prev);
+          bodyTarget.style.maxWidth = parsed.maxWidth || '';
+          bodyTarget.style.margin = parsed.margin || '';
+          bodyTarget.removeAttribute('data-prev-styles');
+        }
+      } catch (e) {}
+    }
+
+    document.body.setAttribute('data-subtitle-theatre-active', 'false');
+    return false;
+  };
+
+  return active ? restoreStyles() : applyStyles();
 }
 
 // Platform-specific styling functions
@@ -267,7 +398,7 @@ const platformStylers = {
             playerView.style.width = realWidth + 'px';
           }
         }
-        
+
         const container = document.querySelector('#player-wrapper .text-track');
         if (container) {
           // Adjust bottom offset and center horizontally relative to the real video area
@@ -308,6 +439,127 @@ const platformStylers = {
       }
     } catch (e) {
       console.error('Error in WeTV styling: ', e);
+    }
+  },
+
+  viu: (settings) => {
+    try {
+      const playerWrapper = document.querySelector('bitmovinplayer-video-null');
+      if (playerWrapper) {
+        playerWrapper.style.containerType = 'inline-size';
+      }
+
+      // Common subtitle selectors observed on various players — be defensive
+      const selectors = [
+        '.subtitle',
+        '.captions',
+        '.caption-text',
+        '.player-subtitle',
+        '.viu-subtitles',
+        '.vui-subtitle',
+      ];
+      const found = new Set();
+      selectors.forEach((sel) => {
+        const nodes = document.querySelectorAll(sel);
+        if (nodes && nodes.length) nodes.forEach((n) => found.add(n));
+      });
+
+      if (found.size === 0) {
+        // Fallback: look for any element with role="caption" or data-track
+        document.querySelectorAll('[role="caption"], [data-track]').forEach((n) => found.add(n));
+      }
+
+      found.forEach((el) => {
+        try {
+          applyTextStyles(el, settings);
+          const container = el.closest('.subtitle-container') || el.parentElement;
+          applyBackgroundStyles(container, settings);
+        } catch (inner) {
+          // ignore per-element errors
+        }
+      });
+
+      // Copy a control button into the bmpui container if present — wait for controls if they're added later
+      try {
+        const attemptInject = () => {
+          const controls =
+            document.querySelector('[aria-label="Video player controls"]') ||
+            document.querySelector(
+              '.bmpui-ui-container.bmpui-controlbar-top, .bmpui-ui-container.bmpui-controlbar-top-right',
+            );
+          // Prefer the dedicated full-screen / theatre toggle when present
+          const button =
+            controls &&
+            (controls.querySelector('#full_screen_btn') ||
+              controls.querySelector('button, [role="button"]'));
+          const targetWrapper =
+            document.querySelector(
+              '.bmpui-ui-container.bmpui-controlbar-top-right .bmpui-container-wrapper',
+            ) ||
+            document.querySelector(
+              '.bmpui-ui-container.bmpui-controlbar-top .bmpui-container-wrapper',
+            ) ||
+            document.querySelector('.bmpui-container-wrapper');
+          if (button && targetWrapper) {
+            // Avoid adding duplicates
+            if (!targetWrapper.querySelector('[data-copied-by-subtitle-appearance]')) {
+              const cloned = button.cloneNode(true);
+              cloned.setAttribute('data-copied-by-subtitle-appearance', 'true');
+              // If this is the full-screen button, mark it and forward clicks to the original to toggle theatre mode
+              if (button.id === 'full_screen_btn') {
+                cloned.setAttribute('data-theatre-button', 'true');
+                if (!cloned.title) cloned.title = 'Theatre mode';
+                // Update aria-label to reflect theatre behavior and remove fullscreen onclick if present
+                cloned.setAttribute('aria-label', 'Theatre mode');
+                cloned.removeAttribute('onclick');
+                try {
+                  cloned.addEventListener('click', () => {
+                    try {
+                      const on = toggleTheatreMode(playerWrapper || document.body);
+                      cloned.setAttribute('aria-pressed', on ? 'true' : 'false');
+                    } catch (e) {
+                      // ignore
+                    }
+                  });
+                } catch (e) {
+                  // ignore
+                }
+              }
+              cloned.removeAttribute('id');
+              targetWrapper.appendChild(cloned);
+            }
+            return true;
+          }
+          return false;
+        };
+
+        if (!attemptInject()) {
+          const observer = new MutationObserver((mutations, obs) => {
+            try {
+              if (attemptInject()) {
+                obs.disconnect();
+              }
+            } catch (e) {
+              // ignore
+            }
+          });
+          observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+          });
+          // Safety: stop observing after 10s to avoid leaks
+          setTimeout(() => {
+            try {
+              observer.disconnect();
+            } catch (e) {}
+          }, 10000);
+        }
+      } catch (copyErr) {
+        // non-fatal
+      }
+    } catch (e) {
+      console.error('Error in Viu styling: ', e);
     }
   },
 };

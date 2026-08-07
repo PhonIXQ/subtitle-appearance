@@ -8,6 +8,7 @@ export function detectPlatform(hostname) {
   if (host.includes('hulu.com')) return 'hulu';
   if (host.includes('primevideo.com')) return 'prime';
   if (host.includes('wetv.vip')) return 'wetv';
+  if (host.includes('viu.com')) return 'viu';
   return 'not supported';
 }
 
