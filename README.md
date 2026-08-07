@@ -18,6 +18,8 @@ A browser extension for Microsoft Edge, Chrome, and Safari that allows you to cu
 - HBO Max
 - Hulu
 - Amazon Prime Video
+- WeTV
+- Viu
 
 ## Installation
 
@@ -59,6 +61,8 @@ Safari extensions run inside a wrapper macOS app. This project's Safari wrapper 
 3. In Safari, go to Settings → Advanced and enable "Show features for web developers".
 4. Go to Settings → Developer and enable "Allow Unsigned Extensions" (this resets each time Safari relaunches, since the app isn't notarized).
 5. Go to Settings → Extensions and enable "Subtitle Appearance".
+
+Note: if the extension version bumps in the future, `MARKETING_VERSION` in the Xcode project (`safari/Subtitle Appearance/Subtitle Appearance.xcodeproj/project.pbxproj`) needs a matching manual update, since regenerating the whole Xcode project would clobber other hand-edits made to it (like the bundle identifier fix).
 
 ## Development
 
